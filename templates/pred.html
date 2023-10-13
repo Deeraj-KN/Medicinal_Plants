@@ -1,0 +1,9 @@
+{%extends "index.html" %}
+    {% block content %}
+            <img src="{{ url_for('send_file', filename=img) }}" alt="{{ species }}"}/>
+            <p><b>Common Name:</b> {{species}}</p>
+            <p><b>Scientific Name:</b> {{sci_name}}</p>
+            <p><b>Medicinal Properties:</b> {{medprop}}</p>
+            <p><b>Edible Uses:</b> {{edibleuses}}</p>
+            <p><b>Composition Details:</b> {{formatted_data}}</p>
+    {% endblock %}
