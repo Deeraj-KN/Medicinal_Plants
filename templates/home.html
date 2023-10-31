@@ -1,14 +1,95 @@
-{%extends "index.html" %}
-    {% block content %}
-    <h2> Leaf Classifier </h2>
-        <form action ="/predict" method="POST" enctype=multipart/form-data>
-            <div class="form-group" style="padding-top: 30px; align-items: center;">
-                <input type="file" class="form-control-file" name="file" accept=".png, .jpg, .jpeg" id="exampleFormControlFile1" class="btn btn-primary btn-lg">
+{% extends "index.html" %}
+
+{% block content %}
+    <style>
+        body {
+            background-image: url('/static/bg.jpg'); /* Replace with the path to your image */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+    </style>
+
+    <div class="jumbotron text-center">
+        <h1 class="display-4">Leaf Classifier</h1>
+        <p class="lead">Upload an image or capture one with your camera to classify the type of leaf</p>
+    </div>
+
+    <div class="container">
+        <form action="/predict" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="fileInput">Choose an image (PNG, JPG, JPEG):</label>
+                <input type="file" class="form-control-file" name="file" accept=".png, .jpg, .jpeg" id="fileInput">
             </div>
-            <input type="submit" class="btn btn-primary btn-lg" value="Process">
+            <button type="submit" class="btn btn-primary btn-lg">Process</button>
         </form>
-    
 
+        <!-- Add a button to toggle the camera -->
+        <button id="toggleCameraButton" class="btn btn-secondary btn-lg">Toggle Camera</button>
 
-            
-    {% endblock %}
+        <!-- Add a video element to display the camera feed (initially hidden) -->
+        <video id="cameraFeed" width="640" height="480" style="display: none;" autoplay></video>
+
+        <!-- Add a "Capture Photo and Save" button (initially hidden) -->
+        <button id="captureButton" class="btn btn-secondary btn-lg" style="display: none;">Capture Photo and Save</button>
+    </div>
+
+    <script>
+        const cameraFeed = document.getElementById("cameraFeed");
+        const toggleCameraButton = document.getElementById("toggleCameraButton");
+        const captureButton = document.getElementById("captureButton");
+
+        let cameraActive = false;
+
+        // Function to toggle the camera feed visibility
+        function toggleCamera() {
+            if (cameraActive) {
+                cameraFeed.style.display = "none";
+                captureButton.style.display = "none"; // Hide the "Capture Photo and Save" button
+            } else {
+                // Get user media (camera) and display it in the video element
+                navigator.mediaDevices
+                    .getUserMedia({ video: true })
+                    .then((stream) => {
+                        cameraFeed.srcObject = stream;
+                        cameraFeed.style.display = "block";
+                        captureButton.style.display = "block"; // Show the "Capture Photo and Save" button
+                    })
+                    .catch((error) => {
+                        console.error("Error accessing the camera:", error);
+                    });
+            }
+
+            cameraActive = !cameraActive;
+        }
+
+        // Function to capture a photo from the camera and save it as .jpg
+        function capturePhoto() {
+            const canvas = document.createElement("canvas");
+            canvas.width = cameraFeed.videoWidth;
+            canvas.height = cameraFeed.videoHeight;
+            const context = canvas.getContext("2d");
+            context.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+
+            // Convert the canvas content to a data URL (base64) in .jpg format
+            const photoDataUrl = canvas.toDataURL("image/jpeg");
+
+            // Create a temporary anchor element to trigger the download
+            const downloadLink = document.createElement("a");
+            downloadLink.href = photoDataUrl;
+            downloadLink.download = "captured_photo.jpg";
+            downloadLink.style.display = "none";
+
+            // Append the anchor element to the document and trigger the download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        // Add click event listeners to the buttons
+        toggleCameraButton.addEventListener("click", toggleCamera);
+        captureButton.addEventListener("click", capturePhoto);
+    </script>
+</body>
+</html>
+{% endblock %}
